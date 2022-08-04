@@ -1,13 +1,14 @@
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 #include <std_msgs/Int16MultiArray.h>
+#include <std_msgs/Int8.h>
 
 #include <iostream>
 #include <string>
 #include <vector>
 using namespace std;
 
-#define window_size 21
+#define default_window_size 31
 #define obstacle_size 5
 #define top_distance_stop 0.2
 #define top_distance_slow 0.6
@@ -15,6 +16,8 @@ using namespace std;
 #define bottom_distance_slow 0.6
 #define top_corner_distance_stop 0.20
 #define bottom_corner_distance_stop 0.20
+
+int window_size = default_window_size ;
 
 
 
@@ -32,6 +35,7 @@ class Group {
     vector<int> index_group[6];
     ros::NodeHandle n;
     ros::Subscriber sub;
+    ros::Subscriber sub_window;
     ros::Publisher pub;
 
    public:
@@ -76,7 +80,18 @@ class Group {
         }
 
         sub = n.subscribe<sensor_msgs::LaserScan>("/scan", 1, &Group::scanCallback, this);
+        sub_window = n.subscribe("/sliding_window/set", 1, &Group::set_window_size, this);
         pub = n.advertise<std_msgs::Int16MultiArray>("/collision", 1);
+    }
+
+    void set_window_size(const std_msgs::Int8& msg) {
+        int temp = window_size;
+        window_size += msg.data ;
+        if (window_size < 0) {
+            window_size = temp;
+        }
+
+        cout << "Current window size: " << window_size << endl;6
     }
 
     void filter(vector<double>& array, const vector<int>& index_array, const sensor_msgs::LaserScan::ConstPtr& scan) {
@@ -153,6 +168,10 @@ class Group {
         msg.data[bottom_L]=detectCollision(arrayList[bottom_L], bottom_corner_distance_stop);
         msg.data[bottom_R]=detectCollision(arrayList[bottom_R], bottom_corner_distance_stop);
         pub.publish(msg);
+
+        for (int i = 0  ; i < arrayList[bottom_R].size() ; i++) {
+            cout << arrayList[bottom_R][i] << endl;
+        }
     }
 };
 
