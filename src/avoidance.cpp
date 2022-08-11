@@ -91,7 +91,7 @@ class Group {
             window_size = temp;
         }
 
-        cout << "Current window size: " << window_size << endl;6
+        cout << "Current window size: " << window_size << endl;
     }
 
     void filter(vector<double>& array, const vector<int>& index_array, const sensor_msgs::LaserScan::ConstPtr& scan) {
@@ -169,9 +169,7 @@ class Group {
         msg.data[bottom_R]=detectCollision(arrayList[bottom_R], bottom_corner_distance_stop);
         pub.publish(msg);
 
-        for (int i = 0  ; i < arrayList[bottom_R].size() ; i++) {
-            cout << arrayList[bottom_R][i] << endl;
-        }
+
     }
 };
 
